@@ -2,7 +2,8 @@ const Blockchain = require('./index');
 const Block = require('./block');
 const { cryptoHash } = require('../util');
 const Wallet = require('../wallet');
-const Transaction = require('../wallet/transaction')
+const Transaction = require('../wallet/transaction');
+const { STARTING_BALANCE } = require('../config');
 
 describe('Blockchain', () => {
     let blockchain, newChain, originalChain, errorMock;
@@ -116,10 +117,46 @@ describe('Blockchain', () => {
         });
 
         describe('when the new chain is longer', () => {
+            let wallet, rewardTransaction;
             beforeEach(() => {
+                wallet = new Wallet();
+                rewardTransaction = Transaction.rewardTransaction({ minerWallet: wallet });
+                
+                const goodOutputMap = {
+                    [wallet.publicKey]: STARTING_BALANCE - 10,
+                    fooRecipient: 10
+                };
+
+                const goodTransaction = {
+                    input: {
+                        timestamp: Date.now(),
+                        amount: wallet.balance,
+                        address: wallet.publicKey,
+                        signature: wallet.sign(goodOutputMap)
+                    },
+                    outputMap: goodOutputMap
+                }
+
+                newChain.addBlock({ data: [goodTransaction, rewardTransaction ]});
+                const goodOutputMap2 = {
+                    [wallet.publicKey]: 990 - 10,
+                    fooRecipient: 10
+                };
+                const goodTransaction2 = {
+                    input: {
+                        timestamp: Date.now(),
+                        amount: wallet.balance,
+                        address: wallet.publicKey,
+                        signature: wallet.sign(goodOutputMap2)
+                    },
+                    outputMap: goodOutputMap2
+                }
+                newChain.addBlock({ data: [goodTransaction, rewardTransaction ]});
+                /*
                 newChain.addBlock({ data: 'Bears'});
                 newChain.addBlock({ data: 'Beats'});
                 newChain.addBlock({ data: 'Battlestar Galactica'});
+                */
             });
             describe('and the chain is invalid', () => {
                 beforeEach(()=> {
