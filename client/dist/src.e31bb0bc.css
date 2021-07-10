@@ -32,9 +32,9 @@ body {
     padding: 5%;
 }
 
-.ConductTransaction {
+.ConductTransaction, .TransactionPool {
     margin: 10%;
-    
+
 }
 
 a, a:hover {
